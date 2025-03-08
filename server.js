@@ -11,11 +11,19 @@ app.use(express.json());
 
 app.get("/api/transactions", async (req, res) => {
     try {
-        const response = await axios.get("https://testnet.mirrornode.hedera.com/api/v1/transactions");
-        console.log("Fetched transactions:", response.data);
-        res.json(response.data);
+        const { accountId } = req.query;
+        let apiUrl = "https://testnet.mirrornode.hedera.com/api/v1/transactions";
+
+        if (accountId) {
+            apiUrl += `?account.id=${accountId}`;
+        }
+
+        console.log(`🔄 Fetching transactions from: ${apiUrl}`);
+        const response = await axios.get(apiUrl);
+
+        res.json({ transactions: response.data.transactions || [] });
     } catch (error) {
-        console.error("Error fetching transactions:", error);
+        console.error("❌ Error fetching transactions:", error.message);
         res.status(500).json({ error: "Error fetching transactions" });
     }
 });
